@@ -8,14 +8,19 @@
             --sora-iro: #87ceeb; --sakura-iro: #ffdae0; --sakura-dark: #ffb7c5;
             --light-grey: #f5f5f7; --text-main: #5d5d5d;
         }
+        html, body { 
+            height: 100%; 
+            overflow: hidden; /* 全体の跳ね上がりを防止 */
+            background: var(--light-grey);
+        }
         body { 
             font-family: -apple-system, "Helvetica Neue", "Hiragino Kaku Gothic ProN", sans-serif; 
-            background: var(--light-grey); color: var(--text-main); 
-            padding: 0; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+            color: var(--text-main); 
+            padding: 0; margin: 0; display: flex; flex-direction: column;
             padding-top: env(safe-area-inset-top);
         }
 
-        /* 【カード１】上部固定：操作パネル */
+        /* 【カード１】絶対に画面外へ逃がさないエリア */
         .fixed-header-card { 
             flex: 0 0 auto; 
             padding: 10px 12px; 
@@ -29,7 +34,7 @@
         h3 { color: var(--sora-iro); margin: 0; font-size: 1.0em; font-weight: 800; }
         
         .copy-area { background: #fdfdfd; border: 2px dashed var(--sakura-dark); padding: 8px; border-radius: 12px; margin-bottom: 8px; position: relative; min-height: 44px; }
-        #outputText { white-space: pre; font-family: ui-monospace, 'Courier New', monospace; font-size: 0.85em; color: var(--text-main); line-height: 1.4; overflow-x: auto; }
+        #outputText { white-space: pre; font-family: ui-monospace, 'Courier New', monospace; font-size: 0.85em; color: var(--text-main); line-height: 1.4; }
         .btn-copy { background: var(--sakura-iro); color: #d06070; font-size: 0.75em; padding: 6px 12px; position: absolute; top: 5px; right: 5px; border-radius: 15px; border: none; font-weight: bold; }
         
         .add-member-form { display: flex; gap: 6px; }
@@ -42,11 +47,11 @@
         input[type="number"] { width: 65px; text-align: center; border: 1px solid var(--sora-iro); }
         .btn-add { flex: 1; background: var(--sora-iro); color: #fff; font-weight: bold; border-radius: 10px; border: none; box-shadow: 0 3px 0 #72bad9; }
 
-        /* 【カード２】下部：スクロール領域（リストとメモ） */
+        /* 【カード２】ここだけが自由に動けるエリア */
         .scrollable-card { 
             flex: 1 1 auto; 
             overflow-y: auto; 
-            padding: 10px 12px 100px 12px; 
+            padding: 10px 12px 200px 12px; /* メモ入力時も余裕を持たせる */
             -webkit-overflow-scrolling: touch; 
         }
         table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
@@ -58,32 +63,26 @@
         .sec-input { width: 50px; background: var(--light-grey); border: 1px solid #eee; color: var(--sora-iro); text-align: center; padding: 6px 0; border-radius: 8px; font-size: 1em; font-weight: bold; }
         .base-label { background: var(--sakura-iro); color: #d06070; font-weight: bold; font-size: 0.75em; padding: 3px 6px; border-radius: 6px; }
 
-        .memo-section { margin-top: 15px; padding-bottom: 20px; }
+        .memo-section { margin-top: 15px; }
         .memo-area { 
-            width: 100%; 
-            min-height: calc(1.5em * 5 + 20px); 
-            max-height: calc(1.5em * 12 + 20px);
+            width: 100%; min-height: 120px; max-height: 250px;
             font-size: 15px; line-height: 1.5; resize: none; 
-            border: 1px solid var(--sakura-dark); 
-            background: #fff;
-            overflow-y: auto;
-            display: block;
+            border: 1px solid var(--sakura-dark); background: #fff;
+            overflow-y: auto; display: block;
         }
 
-        /* リセットボタンを最下部に浮かす */
         .footer-action { 
             position: fixed; bottom: 0; left: 0; width: 100%; 
             padding: 10px 20px calc(10px + env(safe-area-inset-bottom)) 20px; 
             background: linear-gradient(to top, var(--light-grey) 80%, transparent); 
-            box-sizing: border-box; 
             z-index: 999;
         }
-        .btn-reset { background: #bbb; color: #fff; width: 100%; padding: 12px; font-size: 0.9em; font-weight: bold; border-radius: 25px; border: none; opacity: 0.8; }
+        .btn-reset { background: #bbb; color: #fff; width: 100%; padding: 12px; font-size: 0.8em; font-weight: bold; border-radius: 25px; border: none; opacity: 0.7; }
     </style>
 </head>
 <body>
 
-<div class="fixed-header-card">
+<div class="fixed-header-card" id="headerCard">
     <div class="top-bar">
         <h3>るびぃの起点集結Sync</h3>
         <div class="utc-clock" id="utcClock">UTC 00:00:00</div>
@@ -99,10 +98,10 @@
     </form>
 </div>
 
-<div class="scrollable-card">
+<div class="scrollable-card" id="mainScroll">
     <table><tbody id="memberList"></tbody></table>
     <div class="memo-section">
-        <textarea id="memoArea" class="memo-area" placeholder="手元のメモ（自分用）" oninput="autoResizeMemo(); saveMemo();"></textarea>
+        <textarea id="memoArea" class="memo-area" placeholder="手元のメモ（自分用）" oninput="saveMemo()"></textarea>
     </div>
 </div>
 
@@ -111,23 +110,25 @@
 <script>
     let members = JSON.parse(localStorage.getItem('rubi_rally_v2')) || [];
     
+    // 【iPhone対策】キーボードによる全体押し上げを強制リセット
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', () => {
+            document.body.style.height = window.visualViewport.height + 'px';
+            window.scrollTo(0, 0); // 画面自体のスクロールを強制0にする
+        });
+        window.visualViewport.addEventListener('scroll', () => {
+            window.scrollTo(0, 0);
+        });
+    }
+
     function updateClock() {
         const now = new Date();
-        const h = String(now.getUTCHours()).padStart(2, '0');
-        const m = String(now.getUTCMinutes()).padStart(2, '0');
-        const s = String(now.getUTCSeconds()).padStart(2, '0');
-        document.getElementById('utcClock').innerText = `UTC ${h}:${m}:${s}`;
+        document.getElementById('utcClock').innerText = `UTC ${String(now.getUTCHours()).padStart(2,'0')}:${String(now.getUTCMinutes()).padStart(2,'0')}:${String(now.getUTCSeconds()).padStart(2,'0')}`;
     }
     setInterval(updateClock, 1000);
 
     function save() { localStorage.setItem('rubi_rally_v2', JSON.stringify(members)); }
     function saveMemo() { localStorage.setItem('rubi_memo', document.getElementById('memoArea').value); }
-
-    function autoResizeMemo() {
-        const el = document.getElementById('memoArea');
-        el.style.height = 'auto';
-        el.style.height = Math.min(el.scrollHeight, (1.5 * 12 * 16 + 20)) + 'px';
-    }
 
     function addMember() {
         const n = document.getElementById('newName'), s = document.getElementById('newSec');
@@ -143,10 +144,7 @@
         if (i !== -1) { members[i].seconds = parseInt(val) || 0; save(); calculate(); }
     }
 
-    function toZenkakuNum(num) {
-        return String(num).replace(/[0-9]/g, s => String.fromCharCode(s.charCodeAt(0) + 0xFEE0));
-    }
-
+    function toZenkakuNum(num) { return String(num).replace(/[0-9]/g, s => String.fromCharCode(s.charCodeAt(0) + 0xFEE0)); }
     function getZenkakuWidth(s) {
         let w = 0;
         for (let i = 0; i < s.length; i++) {
@@ -157,24 +155,19 @@
     }
 
     function calculate() {
-        const tbody = document.getElementById('memberList');
-        const out = document.getElementById('outputText');
+        const tbody = document.getElementById('memberList'), out = document.getElementById('outputText');
         tbody.innerHTML = '';
         if (members.length === 0) { out.innerText = '入力してね'; return; }
-
         members.sort((a, b) => b.seconds - a.seconds);
         const base = members[0].seconds;
         let lines = [];
-
         members.forEach((m, idx) => {
             const wait = base - m.seconds;
             const isBase = idx === 0;
             let nameWithSan = m.name + "さん";
-            let currentW = getZenkakuWidth(nameWithSan);
-            let padding = "　".repeat(Math.max(1, Math.ceil(6.5 - currentW)));
+            let padding = "　".repeat(Math.max(1, Math.ceil(6.5 - getZenkakuWidth(nameWithSan))));
             let status = isBase ? "起点" : toZenkakuNum(wait) + "秒後";
             lines.push(`${nameWithSan}${padding}${status}`);
-
             tbody.innerHTML += `<tr>
                 <td><strong>${m.name}</strong></td>
                 <td><input type="number" class="sec-input" value="${m.seconds}" onchange="updateSeconds(${m.id}, this.value)" inputmode="numeric"></td>
@@ -188,7 +181,6 @@
     function resetAll() {
         if (confirm("すべてリセットしますか？")) {
             members = []; document.getElementById('memoArea').value = '';
-            document.getElementById('memoArea').style.height = 'auto';
             save(); saveMemo(); calculate();
         }
     }
@@ -204,9 +196,8 @@
     }
 
     window.onload = () => {
-        const savedMemo = localStorage.getItem('rubi_memo') || '';
-        document.getElementById('memoArea').value = savedMemo;
-        updateClock(); calculate(); autoResizeMemo();
+        document.getElementById('memoArea').value = localStorage.getItem('rubi_memo') || '';
+        updateClock(); calculate();
     };
 </script>
 </body>
