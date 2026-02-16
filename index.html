@@ -24,13 +24,17 @@
         .btn-copy { background: var(--sakura-iro); color: #d06070; font-size: 0.75em; padding: 5px 12px; position: absolute; top: 5px; right: 5px; border-radius: 15px; border: none; font-weight: bold; }
         
         .add-member-form { display: flex; gap: 6px; margin-bottom: 4px; }
-        /* input[type="search"] にすることでiPhoneで日本語キーボードが出やすくなります */
-        input[type="search"], input[type="number"], textarea { background: #fff; border: 1px solid #ddd; color: var(--text-main); padding: 10px; border-radius: 10px; font-size: 16px; outline: none; box-sizing: border-box; -webkit-appearance: none; }
-        input[type="search"] { flex: 2; }
+        /* inputmode="full-width-latin"やlang属性の組み合わせで日本語キーボードを誘導 */
+        input[type="text"], input[type="number"], textarea { 
+            background: #fff; border: 1px solid #ddd; color: var(--text-main); 
+            padding: 10px; border-radius: 10px; font-size: 16px; outline: none; 
+            box-sizing: border-box; -webkit-appearance: none; 
+        }
+        input#newName { flex: 2; }
         input[type="number"] { width: 60px; text-align: center; }
         .btn-add { flex: 1; background: var(--sora-iro); color: #fff; font-weight: bold; border-radius: 10px; border: none; box-shadow: 0 2px 0 #72bad9; }
 
-        .scroll-section { flex: 1 1 auto; overflow-y: auto; padding: 8px 12px 160px 12px; -webkit-overflow-scrolling: touch; }
+        .scroll-section { flex: 1 1 auto; overflow-y: auto; padding: 8px 12px 180px 12px; -webkit-overflow-scrolling: touch; }
         table { width: 100%; border-collapse: separate; border-spacing: 0 6px; }
         tr { background: #fff; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.05)); }
         td { padding: 10px 6px; text-align: center; font-size: 0.9em; }
@@ -39,9 +43,12 @@
         
         .sec-input { width: 45px; background: var(--light-grey); border: 1px solid #eee; color: var(--sora-iro); text-align: center; padding: 5px 0; border-radius: 6px; font-size: 0.95em; font-weight: bold; }
         .base-label { background: var(--sakura-iro); color: #d06070; font-weight: bold; font-size: 0.7em; padding: 2px 5px; border-radius: 5px; }
-        
+
         .memo-section { margin-top: 10px; }
-        .memo-area { width: 100%; height: 80px; font-size: 14px; resize: none; border-color: var(--sakura-iro); border-style: solid; border-width: 1px; }
+        .memo-area { 
+            width: 100%; min-height: calc(1.4em * 5 + 20px); max-height: calc(1.4em * 12 + 20px);
+            font-size: 14px; line-height: 1.4; resize: none; border: 1px solid var(--sakura-iro); overflow-y: auto;
+        }
 
         .footer-btn { position: fixed; bottom: 0; left: 0; width: 100%; padding: 10px 20px calc(15px + env(safe-area-inset-bottom)) 20px; background: linear-gradient(to top, var(--light-grey) 80%, transparent); box-sizing: border-box; }
         .btn-reset { background: #bbb; color: #fff; width: 100%; padding: 14px; font-size: 1em; font-weight: bold; border-radius: 30px; border: none; }
@@ -51,24 +58,24 @@
 
 <div class="header-section">
     <div class="top-bar">
-        <h3>るびぃの起点集結</h3>
+        <h3>るびぃの起点集結Sync</h3>
         <div class="utc-clock" id="utcClock">UTC 00:00:00</div>
     </div>
     <div class="copy-area">
         <button class="btn-copy" onclick="copyText()">コピー</button>
         <div id="outputText">入力してね</div>
     </div>
-    <form class="add-member-form" onsubmit="return false;">
-        <input type="search" id="newName" placeholder="なまえ" enterkeyhint="next">
+    <form class="add-member-form" onsubmit="addMember(); return false;">
+        <input type="text" id="newName" placeholder="なまえ" lang="ja" enterkeyhint="next">
         <input type="number" id="newSec" placeholder="びょう" inputmode="numeric">
-        <button class="btn-add" onclick="addMember()">追加</button>
+        <button type="button" class="btn-add" onclick="addMember()">追加</button>
     </form>
 </div>
 
 <div class="scroll-section">
     <table><tbody id="memberList"></tbody></table>
     <div class="memo-section">
-        <textarea id="memoArea" class="memo-area" placeholder="（自分用めも）" oninput="saveMemo()"></textarea>
+        <textarea id="memoArea" class="memo-area" placeholder="手元のメモ（自分用）" oninput="autoResizeMemo(); saveMemo();"></textarea>
     </div>
 </div>
 
@@ -76,8 +83,7 @@
 
 <script>
     let members = JSON.parse(localStorage.getItem('rubi_rally_v2')) || [];
-    document.getElementById('memoArea').value = localStorage.getItem('rubi_memo') || '';
-
+    
     function updateClock() {
         const now = new Date();
         const h = String(now.getUTCHours()).padStart(2, '0');
@@ -89,6 +95,12 @@
 
     function save() { localStorage.setItem('rubi_rally_v2', JSON.stringify(members)); }
     function saveMemo() { localStorage.setItem('rubi_memo', document.getElementById('memoArea').value); }
+
+    function autoResizeMemo() {
+        const el = document.getElementById('memoArea');
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
+    }
 
     function addMember() {
         const n = document.getElementById('newName'), s = document.getElementById('newSec');
@@ -136,13 +148,12 @@
             let status = isBase ? "起点" : toZenkakuNum(wait) + "秒後";
             lines.push(`${nameWithSan}${padding}${status}`);
 
-            tbody.innerHTML += `
-                <tr>
-                    <td><strong>${m.name}</strong></td>
-                    <td><input type="number" class="sec-input" value="${m.seconds}" onchange="updateSeconds(${m.id}, this.value)" inputmode="numeric"></td>
-                    <td>${isBase ? '<span class="base-label">起点</span>' : `<span style="color:var(--sora-iro); font-weight:bold;">${wait}秒後</span>`}</td>
-                    <td><button style="border:none; background:none; color:#ccc; font-size:1.2em;" onclick="removeMember(${m.id})">×</button></td>
-                </tr>`;
+            tbody.innerHTML += `<tr>
+                <td><strong>${m.name}</strong></td>
+                <td><input type="number" class="sec-input" value="${m.seconds}" onchange="updateSeconds(${m.id}, this.value)" inputmode="numeric"></td>
+                <td>${isBase ? '<span class="base-label">起点</span>' : `<span style="color:var(--sora-iro); font-weight:bold;">${wait}秒後</span>`}</td>
+                <td><button style="border:none; background:none; color:#ccc; font-size:1.2em;" onclick="removeMember(${m.id})">×</button></td>
+            </tr>`;
         });
         out.innerText = lines.join('\n');
     }
@@ -150,6 +161,7 @@
     function resetAll() {
         if (confirm("すべて消去しますか？")) {
             members = []; document.getElementById('memoArea').value = '';
+            document.getElementById('memoArea').style.height = 'auto';
             save(); saveMemo(); calculate();
         }
     }
@@ -163,7 +175,12 @@
             setTimeout(() => b.innerText = old, 2000);
         });
     }
-    window.onload = () => { updateClock(); calculate(); };
+
+    window.onload = () => {
+        const savedMemo = localStorage.getItem('rubi_memo') || '';
+        document.getElementById('memoArea').value = savedMemo;
+        updateClock(); calculate(); autoResizeMemo();
+    };
 </script>
 </body>
 </html>
