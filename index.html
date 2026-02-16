@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -6,113 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <style>
         :root { 
-            --sora-iro: #87ceeb; /* そら色 */
-            --sakura-iro: #ffdae0; /* さくら色 */
-            --sakura-dark: #ffb7c5;
-            --light-grey: #f5f5f7; /* うすいグレー */
-            --text-main: #5d5d5d;
+            --sora-iro: #87ceeb; --sakura-iro: #ffdae0; --sakura-dark: #ffb7c5;
+            --light-grey: #f5f5f7; --text-main: #5d5d5d;
         }
-        
         body { 
-            font-family: -apple-system, "Helvetica Neue", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif; 
-            background: var(--light-grey); 
-            color: var(--text-main); 
-            padding: 0; margin: 0; 
-            display: flex; flex-direction: column; 
-            height: 100vh; overflow: hidden;
+            font-family: -apple-system, "Helvetica Neue", "Hiragino Kaku Gothic ProN", sans-serif; 
+            background: var(--light-grey); color: var(--text-main); 
+            padding: 0; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden;
             padding-top: env(safe-area-inset-top);
         }
+        .header-section { flex: 0 0 auto; padding: 10px 12px; background: linear-gradient(135deg, #ffffff, #e0f4ff); border-bottom: 2px solid var(--sora-iro); z-index: 10; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .utc-clock { font-family: monospace; color: var(--sora-iro); background: #fff; padding: 4px 10px; border-radius: 20px; border: 1px solid var(--sora-iro); font-size: 0.85em; font-weight: bold; }
+        h3 { color: var(--sora-iro); margin: 0; font-size: 1.0em; font-weight: 800; }
         
-        /* ヘッダー：そら色と白のグラデーション */
-        .header-section { 
-            flex: 0 0 auto; padding: 12px; 
-            background: linear-gradient(135deg, #ffffff, #e0f4ff);
-            border-bottom: 2px solid var(--sora-iro);
-            z-index: 10;
-        }
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .utc-clock { 
-            font-family: monospace; color: var(--sora-iro); 
-            background: #fff; padding: 4px 10px; border-radius: 20px; 
-            border: 1px solid var(--sora-iro); font-size: 0.85em; font-weight: bold;
-        }
-        h3 { color: var(--sora-iro); margin: 0; font-size: 1.1em; font-weight: 800; }
-
-        /* コピーエリア：さくら色のアクセント */
-        .copy-area { 
-            background: #fff; border: 2px dashed var(--sakura-dark); 
-            padding: 10px; border-radius: 12px; margin-bottom: 10px; 
-            position: relative; min-height: 44px;
-        }
-        #outputText { 
-            white-space: pre; font-family: ui-monospace, 'Courier New', monospace; 
-            font-size: 0.9em; color: var(--text-main); line-height: 1.4; 
-        }
-        .btn-copy { 
-            background: var(--sakura-iro); color: #d06070; font-size: 0.75em; 
-            padding: 5px 12px; position: absolute; top: 6px; right: 6px; 
-            border-radius: 15px; border: none; font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .add-member-form { display: flex; gap: 8px; margin-bottom: 4px; }
-        input[type="text"], input[type="number"] { 
-            background: #fff; border: 1px solid #ddd; color: var(--text-main); 
-            padding: 12px; border-radius: 10px; font-size: 16px; outline: none;
-        }
-        input[type="text"]:focus, input[type="number"]:focus { border-color: var(--sora-iro); }
-        input[type="text"] { flex: 2; }
-        input[type="number"] { width: 65px; text-align: center; }
-        .btn-add { 
-            flex: 1; background: var(--sora-iro); color: #fff; 
-            font-weight: bold; border-radius: 10px; border: none;
-            box-shadow: 0 3px 0 #72bad9;
-        }
-        .btn-add:active { transform: translateY(2px); box-shadow: none; }
-
-        /* リスト部分：うすいグレー背景に白いカード */
-        .scroll-section { 
-            flex: 1 1 auto; overflow-y: auto; 
-            padding: 10px 14px 150px 14px; 
-            -webkit-overflow-scrolling: touch; 
-        }
-        table { 
-            width: 100%; border-collapse: separate; border-spacing: 0 8px; 
-        }
-        th { font-size: 0.75em; color: var(--sora-iro); padding: 4px; font-weight: bold; }
-        tr { 
-            background: #fff; border-radius: 12px; 
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
-        }
-        td { padding: 12px 6px; text-align: center; font-size: 0.95em; border: none; }
-        td:first-child { border-radius: 12px 0 0 12px; text-align: left; padding-left: 15px; }
-        td:last-child { border-radius: 0 12px 12px 0; }
+        .copy-area { background: #fff; border: 2px dashed var(--sakura-dark); padding: 8px; border-radius: 12px; margin-bottom: 8px; position: relative; min-height: 40px; }
+        #outputText { white-space: pre; font-family: ui-monospace, 'Courier New', monospace; font-size: 0.8em; color: var(--text-main); line-height: 1.4; }
+        .btn-copy { background: var(--sakura-iro); color: #d06070; font-size: 0.75em; padding: 5px 12px; position: absolute; top: 5px; right: 5px; border-radius: 15px; border: none; font-weight: bold; }
         
-        .sec-input { 
-            width: 50px; background: var(--light-grey); border: 1px solid #eee; 
-            color: var(--sora-iro); text-align: center; padding: 6px 0; 
-            border-radius: 6px; font-size: 1em; font-weight: bold;
-        }
-        .base-label { 
-            background: var(--sakura-iro); color: #d06070; 
-            font-weight: bold; font-size: 0.75em; padding: 2px 6px; border-radius: 5px; 
-        }
-        .wait-time { color: var(--sora-iro); font-weight: bold; }
-        .btn-del { color: #ccc; font-size: 1.4em; border: none; background: none; }
+        .add-member-form { display: flex; gap: 6px; margin-bottom: 4px; }
+        /* input[type="search"] にすることでiPhoneで日本語キーボードが出やすくなります */
+        input[type="search"], input[type="number"], textarea { background: #fff; border: 1px solid #ddd; color: var(--text-main); padding: 10px; border-radius: 10px; font-size: 16px; outline: none; box-sizing: border-box; -webkit-appearance: none; }
+        input[type="search"] { flex: 2; }
+        input[type="number"] { width: 60px; text-align: center; }
+        .btn-add { flex: 1; background: var(--sora-iro); color: #fff; font-weight: bold; border-radius: 10px; border: none; box-shadow: 0 2px 0 #72bad9; }
 
-        /* フッター：そら色の丸いボタン */
-        .footer-btn { 
-            position: fixed; bottom: 0; left: 0; width: 100%; 
-            padding: 15px 20px calc(15px + env(safe-area-inset-bottom)) 20px;
-            background: linear-gradient(to top, var(--light-grey) 80%, transparent); 
-            box-sizing: border-box; 
-        }
-        .btn-calc { 
-            background: var(--sora-iro); color: #fff; width: 100%; 
-            padding: 16px; font-size: 1.1em; font-weight: bold; 
-            border-radius: 30px; border: none; 
-            box-shadow: 0 4px 10px rgba(135, 206, 235, 0.4);
-        }
+        .scroll-section { flex: 1 1 auto; overflow-y: auto; padding: 8px 12px 160px 12px; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0 6px; }
+        tr { background: #fff; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.05)); }
+        td { padding: 10px 6px; text-align: center; font-size: 0.9em; }
+        td:first-child { border-radius: 10px 0 0 10px; text-align: left; padding-left: 12px; }
+        td:last-child { border-radius: 0 10px 10px 0; }
+        
+        .sec-input { width: 45px; background: var(--light-grey); border: 1px solid #eee; color: var(--sora-iro); text-align: center; padding: 5px 0; border-radius: 6px; font-size: 0.95em; font-weight: bold; }
+        .base-label { background: var(--sakura-iro); color: #d06070; font-weight: bold; font-size: 0.7em; padding: 2px 5px; border-radius: 5px; }
+        
+        .memo-section { margin-top: 10px; }
+        .memo-area { width: 100%; height: 80px; font-size: 14px; resize: none; border-color: var(--sakura-iro); border-style: solid; border-width: 1px; }
+
+        .footer-btn { position: fixed; bottom: 0; left: 0; width: 100%; padding: 10px 20px calc(15px + env(safe-area-inset-bottom)) 20px; background: linear-gradient(to top, var(--light-grey) 80%, transparent); box-sizing: border-box; }
+        .btn-reset { background: #bbb; color: #fff; width: 100%; padding: 14px; font-size: 1em; font-weight: bold; border-radius: 30px; border: none; }
     </style>
 </head>
 <body>
@@ -124,35 +56,27 @@
     </div>
     <div class="copy-area">
         <button class="btn-copy" onclick="copyText()">コピー</button>
-        <div id="outputText">メンバーを入力してね</div>
+        <div id="outputText">入力してね</div>
     </div>
-    <div class="add-member-form">
-        <input type="text" id="newName" placeholder="名前" enterkeyhint="next">
-        <input type="number" id="newSec" placeholder="秒" inputmode="numeric">
+    <form class="add-member-form" onsubmit="return false;">
+        <input type="search" id="newName" placeholder="なまえ" enterkeyhint="next">
+        <input type="number" id="newSec" placeholder="びょう" inputmode="numeric">
         <button class="btn-add" onclick="addMember()">追加</button>
-    </div>
+    </form>
 </div>
 
 <div class="scroll-section">
-    <table>
-        <thead>
-            <tr>
-                <th style="text-align:left; padding-left:15px;">メンバー</th>
-                <th style="width:75px;">行軍秒</th>
-                <th style="width:75px;">待機</th>
-                <th style="width:35px;"></th>
-            </tr>
-        </thead>
-        <tbody id="memberList"></tbody>
-    </table>
+    <table><tbody id="memberList"></tbody></table>
+    <div class="memo-section">
+        <textarea id="memoArea" class="memo-area" placeholder="手元のメモ（自分用）" oninput="saveMemo()"></textarea>
+    </div>
 </div>
 
-<div class="footer-btn">
-    <button class="btn-calc" onclick="calculate()">計算して更新する</button>
-</div>
+<div class="footer-btn"><button class="btn-reset" onclick="resetAll()">すべてリセット</button></div>
 
 <script>
-    let members = JSON.parse(localStorage.getItem('rubi_rally_v1')) || [];
+    let members = JSON.parse(localStorage.getItem('rubi_rally_v2')) || [];
+    document.getElementById('memoArea').value = localStorage.getItem('rubi_memo') || '';
 
     function updateClock() {
         const now = new Date();
@@ -162,98 +86,84 @@
         document.getElementById('utcClock').innerText = `UTC ${h}:${m}:${s}`;
     }
     setInterval(updateClock, 1000);
-    updateClock();
 
-    function save() { localStorage.setItem('rubi_rally_v1', JSON.stringify(members)); }
+    function save() { localStorage.setItem('rubi_rally_v2', JSON.stringify(members)); }
+    function saveMemo() { localStorage.setItem('rubi_memo', document.getElementById('memoArea').value); }
 
     function addMember() {
-        const n = document.getElementById('newName');
-        const s = document.getElementById('newSec');
+        const n = document.getElementById('newName'), s = document.getElementById('newSec');
         if (n.value && s.value) {
             members.push({ id: Date.now(), name: n.value, seconds: parseInt(s.value) });
-            n.value = ''; s.value = '';
-            save(); calculate();
-            n.focus();
+            n.value = ''; s.value = ''; save(); calculate(); n.focus();
         }
     }
 
-    function updateSeconds(id, newVal) {
-        const index = members.findIndex(m => m.id === id);
-        if (index !== -1) {
-            members[index].seconds = parseInt(newVal) || 0;
-            save(); calculate();
-        }
+    function removeMember(id) { members = members.filter(m => m.id !== id); save(); calculate(); }
+    function updateSeconds(id, val) {
+        const i = members.findIndex(m => m.id === id);
+        if (i !== -1) { members[i].seconds = parseInt(val) || 0; save(); calculate(); }
     }
 
-    function removeMember(id) {
-        members = members.filter(m => m.id !== id);
-        save(); calculate();
+    function toZenkakuNum(num) {
+        return String(num).replace(/[0-9]/g, s => String.fromCharCode(s.charCodeAt(0) + 0xFEE0));
     }
 
-    function getDisplayWidth(str) {
-        let width = 0;
-        for (let i = 0; i < str.length; i++) {
-            const code = str.charCodeAt(i);
-            if ((code >= 0x00 && code < 0x81) || (code === 0xf8f0) || (code >= 0xff61 && code <= 0xff9f)) {
-                width += 1;
-            } else {
-                width += 2;
-            }
+    function getZenkakuWidth(s) {
+        let w = 0;
+        for (let i = 0; i < s.length; i++) {
+            const c = s.charCodeAt(i);
+            w += (c >= 0x0 && c < 0x81) || (c === 0xf8f0) || (c >= 0xff61 && c <= 0xff9f) ? 0.5 : 1;
         }
-        return width;
+        return w;
     }
 
     function calculate() {
         const tbody = document.getElementById('memberList');
-        const outputDiv = document.getElementById('outputText');
+        const out = document.getElementById('outputText');
         tbody.innerHTML = '';
-        if (members.length === 0) {
-            outputDiv.innerText = 'メンバーを入力してね';
-            return;
-        }
-        members.sort((a, b) => b.seconds - a.seconds);
-        const baseSeconds = members[0].seconds;
-        const maxWidth = Math.max(...members.map(m => getDisplayWidth(m.name)));
+        if (members.length === 0) { out.innerText = '入力してね'; return; }
 
-        let copyLines = [];
-        members.forEach((member, index) => {
-            const waitTime = baseSeconds - member.seconds;
-            let waitDisplay = (index === 0) ? '<span class="base-label">起点</span>' : `<span class="wait-time">${waitTime}</span>秒後`;
-            
-            const currentWidth = getDisplayWidth(member.name);
-            const spaces = " ".repeat(maxWidth - currentWidth + 2);
-            let statusText = (index === 0) ? "起点" : `${waitTime}秒後`;
-            copyLines.push(`${member.name}${spaces}${statusText}`);
+        members.sort((a, b) => b.seconds - a.seconds);
+        const base = members[0].seconds;
+        let lines = [];
+
+        members.forEach((m, idx) => {
+            const wait = base - m.seconds;
+            const isBase = idx === 0;
+            let nameWithSan = m.name + "さん";
+            let currentW = getZenkakuWidth(nameWithSan);
+            let padding = "　".repeat(Math.max(1, Math.ceil(6.5 - currentW)));
+            let status = isBase ? "起点" : toZenkakuNum(wait) + "秒後";
+            lines.push(`${nameWithSan}${padding}${status}`);
 
             tbody.innerHTML += `
                 <tr>
-                    <td style="text-align:left; padding-left:15px;"><strong>${member.name}</strong></td>
-                    <td><input type="number" class="sec-input" value="${member.seconds}" onchange="updateSeconds(${member.id}, this.value)" inputmode="numeric"></td>
-                    <td>${waitDisplay}</td>
-                    <td><button class="btn-del" onclick="removeMember(${member.id})">×</button></td>
-                </tr>
-            `;
+                    <td><strong>${m.name}</strong></td>
+                    <td><input type="number" class="sec-input" value="${m.seconds}" onchange="updateSeconds(${m.id}, this.value)" inputmode="numeric"></td>
+                    <td>${isBase ? '<span class="base-label">起点</span>' : `<span style="color:var(--sora-iro); font-weight:bold;">${wait}秒後</span>`}</td>
+                    <td><button style="border:none; background:none; color:#ccc; font-size:1.2em;" onclick="removeMember(${m.id})">×</button></td>
+                </tr>`;
         });
-        outputDiv.innerText = copyLines.join('\n');
+        out.innerText = lines.join('\n');
+    }
+
+    function resetAll() {
+        if (confirm("すべて消去しますか？")) {
+            members = []; document.getElementById('memoArea').value = '';
+            save(); saveMemo(); calculate();
+        }
     }
 
     function copyText() {
-        const text = document.getElementById('outputText').innerText;
-        if (!text || text.includes('入力')) return;
-        navigator.clipboard.writeText(text).then(() => {
-            const btn = document.querySelector('.btn-copy');
-            btn.innerText = "完了！";
-            btn.style.background = "#fff";
-            btn.style.color = "#87ceeb";
-            setTimeout(() => { 
-                btn.innerText = "コピー"; 
-                btn.style.background = "var(--sakura-iro)";
-                btn.style.color = "#d06070";
-            }, 2000);
+        const t = document.getElementById('outputText').innerText;
+        if (!t || t.includes('入力してね')) return;
+        navigator.clipboard.writeText(t).then(() => {
+            const b = document.querySelector('.btn-copy');
+            const old = b.innerText; b.innerText = "完了！";
+            setTimeout(() => b.innerText = old, 2000);
         });
     }
-
-    window.onload = calculate;
+    window.onload = () => { updateClock(); calculate(); };
 </script>
 </body>
 </html>
