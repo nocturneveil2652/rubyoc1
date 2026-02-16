@@ -1,1 +1,259 @@
 
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <style>
+        :root { 
+            --sora-iro: #87ceeb; /* そら色 */
+            --sakura-iro: #ffdae0; /* さくら色 */
+            --sakura-dark: #ffb7c5;
+            --light-grey: #f5f5f7; /* うすいグレー */
+            --text-main: #5d5d5d;
+        }
+        
+        body { 
+            font-family: -apple-system, "Helvetica Neue", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif; 
+            background: var(--light-grey); 
+            color: var(--text-main); 
+            padding: 0; margin: 0; 
+            display: flex; flex-direction: column; 
+            height: 100vh; overflow: hidden;
+            padding-top: env(safe-area-inset-top);
+        }
+        
+        /* ヘッダー：そら色と白のグラデーション */
+        .header-section { 
+            flex: 0 0 auto; padding: 12px; 
+            background: linear-gradient(135deg, #ffffff, #e0f4ff);
+            border-bottom: 2px solid var(--sora-iro);
+            z-index: 10;
+        }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .utc-clock { 
+            font-family: monospace; color: var(--sora-iro); 
+            background: #fff; padding: 4px 10px; border-radius: 20px; 
+            border: 1px solid var(--sora-iro); font-size: 0.85em; font-weight: bold;
+        }
+        h3 { color: var(--sora-iro); margin: 0; font-size: 1.1em; font-weight: 800; }
+
+        /* コピーエリア：さくら色のアクセント */
+        .copy-area { 
+            background: #fff; border: 2px dashed var(--sakura-dark); 
+            padding: 10px; border-radius: 12px; margin-bottom: 10px; 
+            position: relative; min-height: 44px;
+        }
+        #outputText { 
+            white-space: pre; font-family: ui-monospace, 'Courier New', monospace; 
+            font-size: 0.9em; color: var(--text-main); line-height: 1.4; 
+        }
+        .btn-copy { 
+            background: var(--sakura-iro); color: #d06070; font-size: 0.75em; 
+            padding: 5px 12px; position: absolute; top: 6px; right: 6px; 
+            border-radius: 15px; border: none; font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .add-member-form { display: flex; gap: 8px; margin-bottom: 4px; }
+        input[type="text"], input[type="number"] { 
+            background: #fff; border: 1px solid #ddd; color: var(--text-main); 
+            padding: 12px; border-radius: 10px; font-size: 16px; outline: none;
+        }
+        input[type="text"]:focus, input[type="number"]:focus { border-color: var(--sora-iro); }
+        input[type="text"] { flex: 2; }
+        input[type="number"] { width: 65px; text-align: center; }
+        .btn-add { 
+            flex: 1; background: var(--sora-iro); color: #fff; 
+            font-weight: bold; border-radius: 10px; border: none;
+            box-shadow: 0 3px 0 #72bad9;
+        }
+        .btn-add:active { transform: translateY(2px); box-shadow: none; }
+
+        /* リスト部分：うすいグレー背景に白いカード */
+        .scroll-section { 
+            flex: 1 1 auto; overflow-y: auto; 
+            padding: 10px 14px 150px 14px; 
+            -webkit-overflow-scrolling: touch; 
+        }
+        table { 
+            width: 100%; border-collapse: separate; border-spacing: 0 8px; 
+        }
+        th { font-size: 0.75em; color: var(--sora-iro); padding: 4px; font-weight: bold; }
+        tr { 
+            background: #fff; border-radius: 12px; 
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
+        }
+        td { padding: 12px 6px; text-align: center; font-size: 0.95em; border: none; }
+        td:first-child { border-radius: 12px 0 0 12px; text-align: left; padding-left: 15px; }
+        td:last-child { border-radius: 0 12px 12px 0; }
+        
+        .sec-input { 
+            width: 50px; background: var(--light-grey); border: 1px solid #eee; 
+            color: var(--sora-iro); text-align: center; padding: 6px 0; 
+            border-radius: 6px; font-size: 1em; font-weight: bold;
+        }
+        .base-label { 
+            background: var(--sakura-iro); color: #d06070; 
+            font-weight: bold; font-size: 0.75em; padding: 2px 6px; border-radius: 5px; 
+        }
+        .wait-time { color: var(--sora-iro); font-weight: bold; }
+        .btn-del { color: #ccc; font-size: 1.4em; border: none; background: none; }
+
+        /* フッター：そら色の丸いボタン */
+        .footer-btn { 
+            position: fixed; bottom: 0; left: 0; width: 100%; 
+            padding: 15px 20px calc(15px + env(safe-area-inset-bottom)) 20px;
+            background: linear-gradient(to top, var(--light-grey) 80%, transparent); 
+            box-sizing: border-box; 
+        }
+        .btn-calc { 
+            background: var(--sora-iro); color: #fff; width: 100%; 
+            padding: 16px; font-size: 1.1em; font-weight: bold; 
+            border-radius: 30px; border: none; 
+            box-shadow: 0 4px 10px rgba(135, 206, 235, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-section">
+    <div class="top-bar">
+        <h3>るびぃの起点集結Sync</h3>
+        <div class="utc-clock" id="utcClock">UTC 00:00:00</div>
+    </div>
+    <div class="copy-area">
+        <button class="btn-copy" onclick="copyText()">コピー</button>
+        <div id="outputText">メンバーを入力してね</div>
+    </div>
+    <div class="add-member-form">
+        <input type="text" id="newName" placeholder="名前" enterkeyhint="next">
+        <input type="number" id="newSec" placeholder="秒" inputmode="numeric">
+        <button class="btn-add" onclick="addMember()">追加</button>
+    </div>
+</div>
+
+<div class="scroll-section">
+    <table>
+        <thead>
+            <tr>
+                <th style="text-align:left; padding-left:15px;">メンバー</th>
+                <th style="width:75px;">行軍秒</th>
+                <th style="width:75px;">待機</th>
+                <th style="width:35px;"></th>
+            </tr>
+        </thead>
+        <tbody id="memberList"></tbody>
+    </table>
+</div>
+
+<div class="footer-btn">
+    <button class="btn-calc" onclick="calculate()">計算して更新する</button>
+</div>
+
+<script>
+    let members = JSON.parse(localStorage.getItem('rubi_rally_v1')) || [];
+
+    function updateClock() {
+        const now = new Date();
+        const h = String(now.getUTCHours()).padStart(2, '0');
+        const m = String(now.getUTCMinutes()).padStart(2, '0');
+        const s = String(now.getUTCSeconds()).padStart(2, '0');
+        document.getElementById('utcClock').innerText = `UTC ${h}:${m}:${s}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    function save() { localStorage.setItem('rubi_rally_v1', JSON.stringify(members)); }
+
+    function addMember() {
+        const n = document.getElementById('newName');
+        const s = document.getElementById('newSec');
+        if (n.value && s.value) {
+            members.push({ id: Date.now(), name: n.value, seconds: parseInt(s.value) });
+            n.value = ''; s.value = '';
+            save(); calculate();
+            n.focus();
+        }
+    }
+
+    function updateSeconds(id, newVal) {
+        const index = members.findIndex(m => m.id === id);
+        if (index !== -1) {
+            members[index].seconds = parseInt(newVal) || 0;
+            save(); calculate();
+        }
+    }
+
+    function removeMember(id) {
+        members = members.filter(m => m.id !== id);
+        save(); calculate();
+    }
+
+    function getDisplayWidth(str) {
+        let width = 0;
+        for (let i = 0; i < str.length; i++) {
+            const code = str.charCodeAt(i);
+            if ((code >= 0x00 && code < 0x81) || (code === 0xf8f0) || (code >= 0xff61 && code <= 0xff9f)) {
+                width += 1;
+            } else {
+                width += 2;
+            }
+        }
+        return width;
+    }
+
+    function calculate() {
+        const tbody = document.getElementById('memberList');
+        const outputDiv = document.getElementById('outputText');
+        tbody.innerHTML = '';
+        if (members.length === 0) {
+            outputDiv.innerText = 'メンバーを入力してね';
+            return;
+        }
+        members.sort((a, b) => b.seconds - a.seconds);
+        const baseSeconds = members[0].seconds;
+        const maxWidth = Math.max(...members.map(m => getDisplayWidth(m.name)));
+
+        let copyLines = [];
+        members.forEach((member, index) => {
+            const waitTime = baseSeconds - member.seconds;
+            let waitDisplay = (index === 0) ? '<span class="base-label">起点</span>' : `<span class="wait-time">${waitTime}</span>秒後`;
+            
+            const currentWidth = getDisplayWidth(member.name);
+            const spaces = " ".repeat(maxWidth - currentWidth + 2);
+            let statusText = (index === 0) ? "起点" : `${waitTime}秒後`;
+            copyLines.push(`${member.name}${spaces}${statusText}`);
+
+            tbody.innerHTML += `
+                <tr>
+                    <td style="text-align:left; padding-left:15px;"><strong>${member.name}</strong></td>
+                    <td><input type="number" class="sec-input" value="${member.seconds}" onchange="updateSeconds(${member.id}, this.value)" inputmode="numeric"></td>
+                    <td>${waitDisplay}</td>
+                    <td><button class="btn-del" onclick="removeMember(${member.id})">×</button></td>
+                </tr>
+            `;
+        });
+        outputDiv.innerText = copyLines.join('\n');
+    }
+
+    function copyText() {
+        const text = document.getElementById('outputText').innerText;
+        if (!text || text.includes('入力')) return;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.querySelector('.btn-copy');
+            btn.innerText = "完了！";
+            btn.style.background = "#fff";
+            btn.style.color = "#87ceeb";
+            setTimeout(() => { 
+                btn.innerText = "コピー"; 
+                btn.style.background = "var(--sakura-iro)";
+                btn.style.color = "#d06070";
+            }, 2000);
+        });
+    }
+
+    window.onload = calculate;
+</script>
+</body>
+</html>
