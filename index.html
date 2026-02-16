@@ -17,11 +17,10 @@
             font-family: -apple-system, "Helvetica Neue", "Hiragino Kaku Gothic ProN", sans-serif; 
             color: var(--text-main); 
             padding: 0; margin: 0; display: flex; flex-direction: column;
-            /* iPhoneの上のノッチ対策 */
             padding-top: env(safe-area-inset-top);
         }
 
-        /* 【カード１】上部固定：コピーと追加 */
+        /* 上部固定カード */
         .fixed-header-card { 
             flex: 0 0 auto; 
             padding: 10px 12px; 
@@ -30,9 +29,16 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             z-index: 1000;
         }
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-        .utc-clock { font-family: monospace; color: var(--sora-iro); font-size: 0.85em; font-weight: bold; }
-        h3 { color: var(--sora-iro); margin: 0; font-size: 1.0em; font-weight: 800; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        
+        /* タイトルと時計のサイズを統一 */
+        h3 { color: var(--sora-iro); margin: 0; font-size: 1.2em; font-weight: 800; }
+        .utc-clock { 
+            font-family: monospace; 
+            color: var(--sora-iro); 
+            font-size: 1.6em; /* タイトルと同じサイズに修正 */
+            font-weight: bold; 
+        }
         
         .copy-area { background: #fdfdfd; border: 2px dashed var(--sakura-dark); padding: 8px; border-radius: 12px; margin-bottom: 8px; position: relative; min-height: 44px; }
         #outputText { white-space: pre; font-family: ui-monospace, 'Courier New', monospace; font-size: 0.85em; color: var(--text-main); line-height: 1.4; }
@@ -48,11 +54,11 @@
         input[type="number"] { width: 65px; text-align: center; border: 1px solid var(--sora-iro); }
         .btn-add { flex: 1; background: var(--sora-iro); color: #fff; font-weight: bold; border-radius: 10px; border: none; box-shadow: 0 3px 0 #72bad9; }
 
-        /* 【カード２】スクロールエリア（リストとメモ） */
+        /* スクロールエリア */
         .scrollable-card { 
             flex: 1 1 auto; 
             overflow-y: auto; 
-            padding: 10px 12px 140px 12px; /* 下部に大きな余白を確保 */
+            padding: 10px 12px 140px 12px; 
             -webkit-overflow-scrolling: touch; 
         }
         table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
@@ -72,10 +78,10 @@
             overflow-y: auto; display: block;
         }
 
-        /* リセットボタン：iPhoneのホームバーを避けて配置 */
+        /* 浮かせるリセットボタン */
         .footer-action { 
             position: fixed; 
-            bottom: calc(15px + env(safe-area-inset-bottom)); /* 下端から浮かせる */
+            bottom: calc(15px + env(safe-area-inset-bottom)); 
             left: 50%;
             transform: translateX(-50%);
             width: 90%;
@@ -120,7 +126,6 @@
 <script>
     let members = JSON.parse(localStorage.getItem('rubi_rally_v2')) || [];
     
-    // キーボード立ち上がり時の画面跳ね上がり防止
     if (window.visualViewport) {
         window.visualViewport.addEventListener('resize', () => {
             document.body.style.height = window.visualViewport.height + 'px';
@@ -154,7 +159,6 @@
         if (i !== -1) { members[i].seconds = parseInt(val) || 0; save(); calculate(); }
     }
 
-    function toZenkakuNum(num) { return String(num).replace(/[0-9]/g, s => String.fromCharCode(s.charCodeAt(0) + 0xFEE0)); }
     function getZenkakuWidth(s) {
         let w = 0;
         for (let i = 0; i < s.length; i++) {
@@ -176,7 +180,8 @@
             const isBase = idx === 0;
             let nameWithSan = m.name + "さん";
             let padding = "　".repeat(Math.max(1, Math.ceil(6.5 - getZenkakuWidth(nameWithSan))));
-            let status = isBase ? "起点" : toZenkakuNum(wait) + "秒後";
+            let status = isBase ? "起点" : wait + "秒後";
+            
             lines.push(`${nameWithSan}${padding}${status}`);
             tbody.innerHTML += `<tr>
                 <td><strong>${m.name}</strong></td>
